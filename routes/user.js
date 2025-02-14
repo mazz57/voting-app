@@ -22,18 +22,12 @@ userRouter.post("/signup" , async (req , res) => {
 
 userRouter.post("/login" , async (req , res) => {
     const { adhaarNO, password } = req.body;
-    const user = await userModel.findOne({ adhaarNO, password });
+    const user = await userModel.findOne({ adhaarNO: adhaarNO });
 
-    if(!user){
+    if(!user || !(await user.comparePassword(password))){
         return res.status(401).json({ message: "Invalid adhaarNO or password" });
     }   
     
-    const match = user.password === password && user.adhaarNO === adhaarNO;
-    
-    if (!match) {
-        return res.status(401).json({ message: "Invalid credentials" });
-    }
-
     const token = jwt.sign({ userId: user._id }, "your-secret-key", { expiresIn: "1h" });
 
     res.status(200).json({
@@ -42,23 +36,39 @@ userRouter.post("/login" , async (req , res) => {
     });
 });
 
-userRouter.get("/users" , async (req , res) => {
-    const users = await User.find();
-    res.status(200).json(users);
+userRouter.get("/profile/:id" , async (req , res) => {
+    try{
+        const userData = req.user;
+        const userId = userData.id;
+        const user = await userModel.findById(userId);
+        res.status(200).json({user});
+    }catch(err){
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
-userRouter.get("/users/:id" , async (req , res) => {
-    const { id } = req.params;
-    const user = await User.findById(id);
-    res.status(200).json(user);
-});
+userRouter.put("/profile/password", async (req , res) => {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+    
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: 'Both currentPassword and newPassword are required' });
+    }
 
-userRouter.put("/users/:id" , async (req , res) => {
-    const { id } = req.params;
-    const { name , email , password } = req.body;
-    const user = await User.findByIdAndUpdate(id , { name , email , password});
-    res.status(200).json(user);
-});
+    const user = await userModel.findById(userId);
+
+    if(!user || !(await user.comparePassword(currentPassword))){
+        return res.status(401).json({ error: 'Invalid current password' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+    
+    res.status(200).json({ message: 'Password updated successfully' });
+
+}); 
+
 
 
 

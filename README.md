@@ -1,8 +1,6 @@
 # voting-app
-<<<<<<< HEAD
+ HEAD
 
-=======
->>>>>>> c8c5371580f487d19e79933179180aebeed153fc
 voting application
 WHAT ???
 A functionality where user can give vote to the given set of candidates
