@@ -1,0 +1,11 @@
+
+const JWT_CANDIDATE_PASSWORD = process.env.JWT_CANDIDATE_PASSWORD; 
+
+
+const JWT_USER_PASSWORD = process.env.JWT_USER_PASSWORD; 
+
+
+module.exports = {
+    JWT_CANDIDATE_PASSWORD, 
+    JWT_USER_PASSWORD, 
+};
